@@ -1,0 +1,20 @@
+extends includes/layout.pug
+
+block content
+  .contactPage
+    h2 Contact Us
+    form(method='POST')
+      .name.contact__text
+        label(for='name') Name:
+        input(type='text' name='name' placeholder='John Doe')
+      .phone.contact__text
+        label(for='phone') Phone Number:
+        input(type='tel' name='phone' placeholder='555-555-5555')
+      .email.contact__text
+        label(for='email') Email:
+        input(type='email' name='email' placeholder='john@doe.com')
+      .comments
+        label(for='message') Comments:
+        textarea(name='message' rows='5' placeholder='How is this stuff so good?')
+      .submit
+        input(type='submit')
