@@ -3,6 +3,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { cyan, red } = require('chalk')
+const routes = require('./routes/') // assumes index file
 
 const app = express() // same as new Express
 
@@ -10,33 +11,7 @@ const app = express() // same as new Express
 const port = process.env.PORT || 3000
 app.set('port', port) // more formal
 
-// middlewares
-app.use((req, res, next) => {
-  // let date = req.headers['if-modified-since']
-  // let get = req.method
-  // let userAgent = req.headers['user-agent']
-  //
-  // let str = req.headers.referer
-  // console.log(typeof str)
-  // let arr = str.split('')
-  // let newArr = []
-  // for (let i = 21; i < arr.length; i++) {
-  //   newArr.push(arr[i])
-  // }
-  // let newStr = newArr.join('')
-  //
-  // let finalStr = `[${date}] "${get} ${newStr}" ${userAgent}`
-  //
-  // console.log(finalStr + '\n')
-
-  console.log(`[${new Date()}] "${cyan(`${req.method} ${req.url}`)}" "${req.agent}"`)
-  next()
-})
-
-app.use(express.static('public'))
-app.use(bodyParser.urlencoded({ extended: false }))
-
-// for setting up Pug
+// for Pug config
 // app.set('views', 'views') // this is assumed
 app.set('view engine', 'pug')
 
@@ -46,30 +21,22 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.locals.company = 'Sick Pizza Shop'
 
+// middlewares
+app.use((req, res, next) => {
+  console.log(`[${new Date()}] "${cyan(`${req.method} ${req.url}`)}" "${req.agent}"`)
+  next()
+})
+
+
+app.use(express.static('public'))
+app.use(bodyParser.urlencoded({ extended: false }))
+
 // routes
-app.get('/', (req,res) => {
-  res.render('index')
-})
-
-app.get('/about', (req, res) => {
-  res.render('about', {page: 'About'})
-})
-
-app.get('/contact', (req, res) => {
-  res.render('contact', {page: 'Contact'})
-})
-
-app.post('/contact', (req, res) => {
-  console.log(req.body)
-  res.redirect('/')
-})
+app.use(routes)
 
 // error-handling middleware
-app.use((req, res, next) => {
-  console.error('404')
-  const err = Error('Not Found')
-  err.status = 404
-  next(err)
+app.use((req, res) => { // custom 404 page
+  res.render('404')
 })
 
 app.use((err, req, res, next) => {
