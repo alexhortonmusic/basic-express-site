@@ -2,6 +2,8 @@
 
 const express = require('express')
 const bodyParser = require('body-parser')
+const { cyan, red } = require('chalk')
+const routes = require('./routes/') // assumes index file
 
 const app = express() // same as new Express
 
@@ -9,12 +11,7 @@ const app = express() // same as new Express
 const port = process.env.PORT || 3000
 app.set('port', port) // more formal
 
-// middlewares
-app.use(express.static('public'))
-
-app.use(bodyParser.urlencoded({ extended: false }))
-
-// for setting up Pug
+// for Pug config
 // app.set('views', 'views') // this is assumed
 app.set('view engine', 'pug')
 
@@ -24,22 +21,28 @@ if (process.env.NODE_ENV !== 'production') {
 
 app.locals.company = 'Sick Pizza Shop'
 
+// middlewares
+app.use((req, res, next) => {
+  console.log(`[${new Date()}] "${cyan(`${req.method} ${req.url}`)}" "${req.agent}"`)
+  next()
+})
+
+
+app.use(express.static('public'))
+app.use(bodyParser.urlencoded({ extended: false }))
+
 // routes
-app.get('/', (req,res) => {
-  res.render('index')
+app.use(routes)
+
+// error-handling middleware
+app.use((req, res) => { // custom 404 page
+  res.render('404')
 })
 
-app.get('/about', (req, res) => {
-  res.render('about', {page: 'About'})
-})
-
-app.get('/contact', (req, res) => {
-  res.render('contact', {page: 'Contact'})
-})
-
-app.post('/contact', (req, res) => {
-  console.log(req.body)
-  res.redirect('/')
+app.use((err, req, res, next) => {
+  res.sendStatus(err.status || 500)
+  // res.send('Internal Server Error')
+  console.error(`[${new Date()}] "${red(`${req.method} ${req.url}`)}" Error(${res.statusCode}): "${res.statusMessage}"`)
 })
 
 
