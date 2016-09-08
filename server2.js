@@ -2,6 +2,7 @@
 
 const express = require('express')
 const bodyParser = require('body-parser')
+const { cyan, red } = require('chalk')
 
 const app = express() // same as new Express
 
@@ -10,8 +11,29 @@ const port = process.env.PORT || 3000
 app.set('port', port) // more formal
 
 // middlewares
-app.use(express.static('public'))
+app.use((req, res, next) => {
+  // let date = req.headers['if-modified-since']
+  // let get = req.method
+  // let userAgent = req.headers['user-agent']
+  //
+  // let str = req.headers.referer
+  // console.log(typeof str)
+  // let arr = str.split('')
+  // let newArr = []
+  // for (let i = 21; i < arr.length; i++) {
+  //   newArr.push(arr[i])
+  // }
+  // let newStr = newArr.join('')
+  //
+  // let finalStr = `[${date}] "${get} ${newStr}" ${userAgent}`
+  //
+  // console.log(finalStr + '\n')
 
+  console.log(`[${new Date()}] "${cyan(`${req.method} ${req.url}`)}" "${req.agent}"`)
+  next()
+})
+
+app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // for setting up Pug
@@ -40,6 +62,20 @@ app.get('/contact', (req, res) => {
 app.post('/contact', (req, res) => {
   console.log(req.body)
   res.redirect('/')
+})
+
+// error-handling middleware
+app.use((req, res, next) => {
+  console.error('404')
+  const err = Error('Not Found')
+  err.status = 404
+  next(err)
+})
+
+app.use((err, req, res, next) => {
+  res.sendStatus(err.status || 500)
+  // res.send('Internal Server Error')
+  console.error(`[${new Date()}] "${red(`${req.method} ${req.url}`)}" Error(${res.statusCode}): "${res.statusMessage}"`)
 })
 
 
