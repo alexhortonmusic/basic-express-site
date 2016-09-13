@@ -3,7 +3,9 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { cyan, red } = require('chalk')
+
 const routes = require('./routes/') // assumes index file
+const { connect } = require('./database')
 
 const app = express() // same as new Express
 
@@ -47,6 +49,10 @@ app.use((err, req, res, next) => {
 
 
 // Listens for Port changes/logs message when it triggers
-app.listen(port, () => {
-  console.log(`Express server listening on port ${port}`)
-})
+connect()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Express server listening on port ${port}`)
+    })
+  })
+  .catch(console.error)
